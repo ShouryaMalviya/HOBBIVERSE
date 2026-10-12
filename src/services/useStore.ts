@@ -106,6 +106,12 @@ export function useHobbiverseStore() {
     return created;
   };
 
+  const toggleCompletePlan = async (id: string) => {
+    const res = await demoRepository.toggleCompletePlan(id);
+    await refreshAll();
+    return res;
+  };
+
   const deletePlan = async (id: string) => {
     const ok = await demoRepository.deletePlannedActivity(id);
     await refreshAll();
@@ -170,6 +176,7 @@ export function useHobbiverseStore() {
     toggleCompleteStep,
     logSession,
     createPlan,
+    toggleCompletePlan,
     deletePlan,
     createJournalEntry,
     deleteJournalEntry,

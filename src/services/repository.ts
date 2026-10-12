@@ -70,6 +70,7 @@ export interface IHobbiverseRepository {
   logActivitySession(session: Omit<ActivitySession, "id" | "createdAt">): Promise<ActivitySession>;
   getPlannedActivities(): Promise<PlannedActivity[]>;
   createPlannedActivity(plan: Omit<PlannedActivity, "id">): Promise<PlannedActivity>;
+  toggleCompletePlan(id: string): Promise<boolean>;
   deletePlannedActivity(id: string): Promise<boolean>;
   getJournalEntries(): Promise<JournalEntry[]>;
   createJournalEntry(entry: Omit<JournalEntry, "id" | "createdAt" | "isPrivate">): Promise<JournalEntry>;
@@ -310,6 +311,33 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     state.plannedActivities.push(created);
     this.saveState(state);
     return created;
+  }
+
+  async toggleCompletePlan(id: string): Promise<boolean> {
+    const state = this.getState();
+    const plan = state.plannedActivities.find((p) => p.id === id);
+    if (!plan) return false;
+    plan.isCompleted = !plan.isCompleted;
+
+    if (plan.isCompleted) {
+      const session: ActivitySession = {
+        id: `sess-${Date.now()}`,
+        hobbyId: plan.hobbyId,
+        hobbySlug: plan.hobbySlug,
+        hobbyTitle: plan.hobbyTitle,
+        category: plan.category,
+        date: new Date().toISOString().split("T")[0],
+        durationMinutes: plan.estimatedDurationMinutes || 15,
+        notes: plan.note ? `Completed scheduled session: ${plan.note}` : "Completed planned session.",
+        reflectionMood: "Accomplished & Calm",
+        createdAt: new Date().toISOString(),
+      };
+      state.activitySessions.unshift(session);
+      state.userProfile.sessionsLoggedCount += 1;
+    }
+
+    this.saveState(state);
+    return plan.isCompleted;
   }
 
   async deletePlannedActivity(id: string): Promise<boolean> {
