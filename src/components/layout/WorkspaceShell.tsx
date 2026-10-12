@@ -23,9 +23,10 @@ import {
   X,
   Search,
   ShieldCheck,
-  User,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/services/auth";
 
 export interface WorkspaceShellProps {
   children: React.ReactNode;
@@ -33,6 +34,7 @@ export interface WorkspaceShellProps {
 
 export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
   const pathname = usePathname();
+  const { user, isDemo, signOut } = useAuth();
   const [mobileDrawerOpen, setMobileDrawerOpen] = React.useState(false);
   const [isDark, setIsDark] = React.useState(false);
 
@@ -153,24 +155,28 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
         </nav>
 
         {/* Sidebar Footer User Card */}
-        <div className="p-3 border-t border-[var(--border-subtle)] bg-[var(--paper-100)]">
+        <div className="p-3 border-t border-[var(--border-subtle)] bg-[var(--paper-100)] flex items-center justify-between gap-2">
           <Link
-            href="/profile/demo-user"
-            className="flex items-center justify-between p-2 rounded-[var(--radius-md)] hover:bg-[var(--paper-200)] transition-colors select-none"
+            href={user ? `/profile/${user.username}` : "/sign-in"}
+            className="flex-1 flex items-center gap-2.5 p-1.5 rounded-[var(--radius-md)] hover:bg-[var(--paper-200)] transition-colors select-none min-w-0"
           >
-            <div className="flex items-center gap-2.5">
-              <Avatar name="Demo Explorer" size="sm" status="online" />
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-[var(--ink-950)] truncate max-w-[120px]">
-                  Demo Explorer
-                </span>
-                <span className="text-[10px] text-[var(--forest-700)] font-medium">
-                  Local Mode Active
-                </span>
-              </div>
+            <Avatar name={user?.displayName || "Demo Explorer"} size="sm" status="online" />
+            <div className="flex flex-col text-left min-w-0">
+              <span className="text-xs font-bold text-[var(--ink-950)] truncate">
+                {user?.displayName || "Demo Explorer"}
+              </span>
+              <span className="text-[10px] text-[var(--forest-700)] font-medium truncate">
+                {isDemo ? "Local Mode" : "Connected"}
+              </span>
             </div>
-            <User className="w-4 h-4 text-[var(--stone-600)]" />
           </Link>
+          <IconButton
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            aria-label="Sign out"
+            icon={<LogOut className="w-4 h-4 text-[var(--stone-600)] hover:text-[var(--wine-700)]" />}
+          />
         </div>
       </aside>
 
@@ -228,8 +234,8 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
             />
 
             {/* Profile Avatar */}
-            <Link href="/profile/demo-user">
-              <Avatar name="Demo Explorer" size="sm" />
+            <Link href={user ? `/profile/${user.username}` : "/sign-in"} aria-label="View user profile">
+              <Avatar name={user?.displayName || "Demo Explorer"} size="sm" />
             </Link>
           </div>
         </header>
@@ -284,6 +290,17 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
                   </Link>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileDrawerOpen(false);
+                  signOut();
+                }}
+                className="flex items-center gap-3 px-3.5 py-2 text-sm text-[var(--wine-700)] hover:bg-[var(--paper-200)] rounded-md transition-colors text-left"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
             </div>
           </div>
         )}

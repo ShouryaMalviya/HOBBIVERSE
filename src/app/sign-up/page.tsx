@@ -2,17 +2,58 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { HobbiverseBrand } from "@/components/layout/HobbiverseBrand";
-import { Sparkles, ArrowRight, Mail, Lock, User } from "lucide-react";
+import { useAuth } from "@/services/auth";
+import { Sparkles, ArrowRight, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+
+const signUpSchema = z.object({
+  displayName: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address (e.g. you@example.com)"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const router = useRouter();
+  const { signInDemo, isConfigured } = useAuth();
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      displayName: "Clara Bow",
+      email: "clara@atelier.local",
+      password: "password123",
+    },
+  });
+
+  const onSubmit = async (data: SignUpFormData) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      signInDemo(data.email, data.displayName);
+      router.push("/onboarding");
+    }, 600);
+  };
+
+  const handleInstantDemo = () => {
+    signInDemo();
+    router.push("/onboarding");
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-body)]">
@@ -34,59 +75,81 @@ export default function SignUpPage() {
           <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--brand-soft)] border border-[var(--rose-300)] flex flex-col gap-2.5">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--brand-soft-text)]">
               <Sparkles className="w-4 h-4 text-[var(--wine-700)]" aria-hidden="true" />
-              <span>Try Without Signing Up</span>
+              <span>Try Without Cloud Credentials</span>
             </div>
             <p className="text-xs text-[var(--ink-700)] leading-relaxed">
-              Launch directly into personalized onboarding in Demo Mode.
+              {!isConfigured
+                ? "Operating in Demo Mode: launch directly into personalized onboarding with zero external credentials needed."
+                : "Initialize a sample user session right in your browser."}
             </p>
-            <Link href="/onboarding" className="w-full">
-              <Button variant="primary" size="sm" className="w-full" rightIcon={<ArrowRight className="w-4 h-4" />}>
-                Start Onboarding in Demo Mode
-              </Button>
-            </Link>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleInstantDemo}
+              className="w-full shadow-xs"
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+            >
+              Start Onboarding in Demo Mode
+            </Button>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-[var(--border-subtle)]" />
             <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--stone-600)]">
-              Or Create Account
+              Or Sign Up With Email
             </span>
             <div className="flex-1 h-px bg-[var(--border-subtle)]" />
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
             <Input
-              label="Your Name or Handle"
+              label="Your Name or Studio Handle"
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Clara"
               leftIcon={<User className="w-4 h-4" />}
+              error={errors.displayName?.message}
+              {...register("displayName")}
             />
 
             <Input
               label="Email Address"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               leftIcon={<Mail className="w-4 h-4" />}
+              error={errors.email?.message}
+              {...register("email")}
             />
 
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              leftIcon={<Lock className="w-4 h-4" />}
-            />
+            <div className="relative">
+              <Input
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                leftIcon={<Lock className="w-4 h-4" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[var(--stone-600)] hover:text-[var(--ink-950)] p-1 focus:outline-none cursor-pointer"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                }
+                error={errors.password?.message}
+                {...register("password")}
+              />
+            </div>
 
-            <Link href="/onboarding">
-              <Button variant="secondary" size="md" className="w-full mt-2">
-                Continue (Demo Adapter)
-              </Button>
-            </Link>
+            <Button
+              type="submit"
+              variant="secondary"
+              size="md"
+              isLoading={isLoading}
+              className="w-full mt-2"
+            >
+              Create Account (Demo Adapter)
+            </Button>
           </form>
 
           <div className="text-center text-xs text-[var(--stone-600)] pt-2 border-t border-[var(--border-subtle)]">

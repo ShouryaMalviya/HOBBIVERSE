@@ -6,3 +6,4 @@
 export * from "./repository";
 export * from "./seedData";
 export * from "./useStore";
+export * from "./auth";
