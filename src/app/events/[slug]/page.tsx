@@ -6,13 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import { SEED_EVENTS } from "@/services/seedData";
 
 export function generateStaticParams() {
-  return [
-    { slug: "acoustic-song-circle" },
-    { slug: "weekend-leaf-printing" },
-    { slug: "board-game-strategy" },
-  ];
+  return SEED_EVENTS.map((e) => ({ slug: e.slug }));
 }
 
 export default async function EventDetailPage({

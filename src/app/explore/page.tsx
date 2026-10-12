@@ -8,42 +8,10 @@ import { Badge, BadgeVariant } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/Card";
 import { CATEGORY_THEMES } from "@/styles/tokens";
 import { Clock, ArrowRight } from "lucide-react";
+import { SEED_HOBBIES } from "@/services/seedData";
 
 export default function ExplorePage() {
-  const sampleHobbies = [
-    {
-      slug: "botanical-watercolor",
-      title: "Botanical Watercolor Painting",
-      category: "art-craft" as const,
-      categoryName: "Art & Craft",
-      time: "20 min",
-      description: "Learn pigment transparency, leaf washes, and delicate organic brushwork on cold-press paper.",
-    },
-    {
-      slug: "sourdough-baking",
-      title: "Artisan Sourdough Rhythm",
-      category: "cooking" as const,
-      categoryName: "Cooking & Baking",
-      time: "15 min hands-on",
-      description: "Cultivate wild yeast fermentation, master hydration folding, and bake crusty rustic loaves.",
-    },
-    {
-      slug: "fingerstyle-guitar",
-      title: "Fingerstyle Acoustic Guitar",
-      category: "music" as const,
-      categoryName: "Music",
-      time: "15 min",
-      description: "Learn gentle Travis thumb-picking patterns and soothing folk chord progressions.",
-    },
-    {
-      slug: "pressed-herbarium",
-      title: "Pressed Flower Herbarium",
-      category: "outdoors-nature" as const,
-      categoryName: "Outdoors & Nature",
-      time: "25 min",
-      description: "Forage local botanical specimens and press them between parchment weights for archival wall art.",
-    },
-  ];
+  const sampleHobbies = SEED_HOBBIES;
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-body)]">
@@ -83,7 +51,7 @@ export default function ExplorePage() {
                       {hobby.categoryName}
                     </Badge>
                     <span className="text-xs text-[var(--stone-600)] flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" aria-hidden="true" /> {hobby.time}
+                      <Clock className="w-3.5 h-3.5" aria-hidden="true" /> {hobby.timeEstimate}
                     </span>
                   </div>
                   <CardTitle className="mt-2 text-lg">{hobby.title}</CardTitle>

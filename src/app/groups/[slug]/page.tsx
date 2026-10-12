@@ -6,13 +6,10 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { UserPlus, ArrowLeft } from "lucide-react";
+import { SEED_GROUPS } from "@/services/seedData";
 
 export function generateStaticParams() {
-  return [
-    { slug: "botanical-artists" },
-    { slug: "sourdough-bakers" },
-    { slug: "acoustic-circle" },
-  ];
+  return SEED_GROUPS.map((g) => ({ slug: g.slug }));
 }
 
 export default async function GroupDetailPage({

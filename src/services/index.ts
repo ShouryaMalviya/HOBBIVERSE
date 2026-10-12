@@ -1,10 +1,8 @@
 /**
- * Hobbiverse Repository & Service Layer
- * Abstracts data storage between local demo mode and remote providers.
+ * Hobbiverse Repository & Services API
+ * Single access boundary for seed data, domain persistence, and local demo storage.
  */
 
-export interface ServiceResponse<T> {
-  data: T | null;
-  error: string | null;
-  isDemo: boolean;
-}
+export * from "./repository";
+export * from "./seedData";
+export * from "./useStore";

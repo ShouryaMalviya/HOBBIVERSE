@@ -7,14 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Bookmark, CheckCircle, ArrowLeft, Calendar } from "lucide-react";
+import { SEED_HOBBIES } from "@/services/seedData";
 
 export function generateStaticParams() {
-  return [
-    { slug: "botanical-watercolor" },
-    { slug: "sourdough-baking" },
-    { slug: "fingerstyle-guitar" },
-    { slug: "pressed-herbarium" },
-  ];
+  return SEED_HOBBIES.map((h) => ({ slug: h.slug }));
 }
 
 export default async function HobbyDetailPage({
