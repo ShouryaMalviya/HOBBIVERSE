@@ -106,6 +106,12 @@ export function useHobbiverseStore() {
     return created;
   };
 
+  const updatePlan = async (id: string, updates: Partial<Omit<PlannedActivity, "id">>) => {
+    const updated = await demoRepository.updatePlannedActivity(id, updates);
+    await refreshAll();
+    return updated;
+  };
+
   const toggleCompletePlan = async (id: string) => {
     const res = await demoRepository.toggleCompletePlan(id);
     await refreshAll();
@@ -122,6 +128,12 @@ export function useHobbiverseStore() {
     const created = await demoRepository.createJournalEntry(entry);
     await refreshAll();
     return created;
+  };
+
+  const updateJournalEntry = async (id: string, updates: Partial<Omit<JournalEntry, "id" | "isPrivate">>) => {
+    const updated = await demoRepository.updateJournalEntry(id, updates);
+    await refreshAll();
+    return updated;
   };
 
   const deleteJournalEntry = async (id: string) => {
@@ -176,9 +188,11 @@ export function useHobbiverseStore() {
     toggleCompleteStep,
     logSession,
     createPlan,
+    updatePlan,
     toggleCompletePlan,
     deletePlan,
     createJournalEntry,
+    updateJournalEntry,
     deleteJournalEntry,
     createCommunityPost,
     toggleLikePost,

@@ -70,10 +70,12 @@ export interface IHobbiverseRepository {
   logActivitySession(session: Omit<ActivitySession, "id" | "createdAt">): Promise<ActivitySession>;
   getPlannedActivities(): Promise<PlannedActivity[]>;
   createPlannedActivity(plan: Omit<PlannedActivity, "id">): Promise<PlannedActivity>;
+  updatePlannedActivity(id: string, updates: Partial<Omit<PlannedActivity, "id">>): Promise<PlannedActivity | null>;
   toggleCompletePlan(id: string): Promise<boolean>;
   deletePlannedActivity(id: string): Promise<boolean>;
   getJournalEntries(): Promise<JournalEntry[]>;
   createJournalEntry(entry: Omit<JournalEntry, "id" | "createdAt" | "isPrivate">): Promise<JournalEntry>;
+  updateJournalEntry(id: string, updates: Partial<Omit<JournalEntry, "id" | "isPrivate">>): Promise<JournalEntry | null>;
   deleteJournalEntry(id: string): Promise<boolean>;
   getCommunityPosts(): Promise<CommunityPost[]>;
   createCommunityPost(post: Omit<CommunityPost, "id" | "createdAt" | "likesCount" | "commentsCount">): Promise<CommunityPost>;
@@ -313,6 +315,18 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     return created;
   }
 
+  async updatePlannedActivity(
+    id: string,
+    updates: Partial<Omit<PlannedActivity, "id">>
+  ): Promise<PlannedActivity | null> {
+    const state = this.getState();
+    const plan = state.plannedActivities.find((p) => p.id === id);
+    if (!plan) return null;
+    Object.assign(plan, updates);
+    this.saveState(state);
+    return plan;
+  }
+
   async toggleCompletePlan(id: string): Promise<boolean> {
     const state = this.getState();
     const plan = state.plannedActivities.find((p) => p.id === id);
@@ -368,6 +382,18 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     state.journalEntries.unshift(created);
     this.saveState(state);
     return created;
+  }
+
+  async updateJournalEntry(
+    id: string,
+    updates: Partial<Omit<JournalEntry, "id" | "isPrivate">>
+  ): Promise<JournalEntry | null> {
+    const state = this.getState();
+    const entry = state.journalEntries.find((j) => j.id === id);
+    if (!entry) return null;
+    Object.assign(entry, updates);
+    this.saveState(state);
+    return entry;
   }
 
   async deleteJournalEntry(id: string): Promise<boolean> {
