@@ -8,6 +8,7 @@ import {
   PlannedActivity,
   JournalEntry,
   CommunityPost,
+  Comment,
   Group,
   Event,
   Notification,
@@ -23,6 +24,8 @@ export function useHobbiverseStore() {
   const [plans, setPlans] = React.useState<PlannedActivity[]>([]);
   const [journalEntries, setJournalEntries] = React.useState<JournalEntry[]>([]);
   const [communityPosts, setCommunityPosts] = React.useState<CommunityPost[]>([]);
+  const [comments, setComments] = React.useState<Comment[]>([]);
+  const [mutedUsers, setMutedUsers] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<Group[]>([]);
   const [events, setEvents] = React.useState<Event[]>([]);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
@@ -36,6 +39,8 @@ export function useHobbiverseStore() {
       pl,
       journal,
       posts,
+      commList,
+      mutedList,
       grps,
       evts,
       notifs,
@@ -47,6 +52,8 @@ export function useHobbiverseStore() {
       demoRepository.getPlannedActivities(),
       demoRepository.getJournalEntries(),
       demoRepository.getCommunityPosts(),
+      demoRepository.getComments(),
+      demoRepository.getMutedUsers(),
       demoRepository.getGroups(),
       demoRepository.getEvents(),
       demoRepository.getNotifications(),
@@ -59,6 +66,8 @@ export function useHobbiverseStore() {
     setPlans(pl);
     setJournalEntries(journal);
     setCommunityPosts(posts);
+    setComments(commList);
+    setMutedUsers(mutedList);
     setGroups(grps);
     setEvents(evts);
     setNotifications(notifs);
@@ -154,6 +163,28 @@ export function useHobbiverseStore() {
     return liked;
   };
 
+  const createComment = async (comment: Omit<Comment, "id" | "createdAt">) => {
+    const created = await demoRepository.createComment(comment);
+    await refreshAll();
+    return created;
+  };
+
+  const reportContent = async (report: {
+    contentId: string;
+    contentType: "post" | "comment" | "user";
+    reason: string;
+  }) => {
+    const ok = await demoRepository.reportContent(report);
+    await refreshAll();
+    return ok;
+  };
+
+  const toggleMuteUser = async (handle: string) => {
+    const isMuted = await demoRepository.toggleMuteUser(handle);
+    await refreshAll();
+    return isMuted;
+  };
+
   const toggleJoinGroup = async (groupId: string) => {
     const joined = await demoRepository.toggleJoinGroup(groupId);
     await refreshAll();
@@ -178,6 +209,8 @@ export function useHobbiverseStore() {
     plans,
     journalEntries,
     communityPosts,
+    comments,
+    mutedUsers,
     groups,
     events,
     notifications,
@@ -196,6 +229,9 @@ export function useHobbiverseStore() {
     deleteJournalEntry,
     createCommunityPost,
     toggleLikePost,
+    createComment,
+    reportContent,
+    toggleMuteUser,
     toggleJoinGroup,
     toggleRsvpEvent,
     resetDemo,

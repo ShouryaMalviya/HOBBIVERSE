@@ -12,6 +12,7 @@ import {
   Notification,
   UserProfile,
   UserPreferences,
+  Comment,
 } from "@/types";
 import {
   SEED_HOBBIES,
@@ -20,6 +21,7 @@ import {
   SEED_PLANNED_ACTIVITIES,
   SEED_JOURNAL_ENTRIES,
   SEED_COMMUNITY_POSTS,
+  SEED_COMMENTS,
   SEED_GROUPS,
   SEED_EVENTS,
   SEED_CHALLENGES,
@@ -47,12 +49,15 @@ export interface DemoStatePayload {
   plannedActivities: PlannedActivity[];
   journalEntries: JournalEntry[];
   communityPosts: CommunityPost[];
+  comments: Comment[];
   groups: Group[];
   events: Event[];
   challenges: Challenge[];
   notifications: Notification[];
   userProfile: UserProfile;
   userPreferences: UserPreferences;
+  mutedUsers: string[];
+  reports: Array<{ id: string; contentId: string; contentType: string; reason: string; timestamp: string }>;
 }
 
 const STORAGE_KEY = "hobbiverse_demo_state_v1";
@@ -80,10 +85,16 @@ export interface IHobbiverseRepository {
   getCommunityPosts(): Promise<CommunityPost[]>;
   createCommunityPost(post: Omit<CommunityPost, "id" | "createdAt" | "likesCount" | "commentsCount">): Promise<CommunityPost>;
   toggleLikePost(postId: string): Promise<boolean>;
+  getComments(postId?: string): Promise<Comment[]>;
+  createComment(comment: Omit<Comment, "id" | "createdAt">): Promise<Comment>;
   getGroups(): Promise<Group[]>;
+  getGroupBySlug(slug: string): Promise<Group | null>;
   toggleJoinGroup(groupId: string): Promise<boolean>;
   getEvents(): Promise<Event[]>;
   toggleRsvpEvent(eventId: string): Promise<boolean>;
+  reportContent(report: { contentId: string; contentType: "post" | "comment" | "user"; reason: string }): Promise<boolean>;
+  toggleMuteUser(handle: string): Promise<boolean>;
+  getMutedUsers(): Promise<string[]>;
   getUserPreferences(): Promise<UserPreferences>;
   saveUserPreferences(prefs: UserPreferences): Promise<void>;
   getUserProfile(): Promise<UserProfile>;
@@ -101,12 +112,15 @@ export class LocalDemoRepository implements IHobbiverseRepository {
       plannedActivities: [...SEED_PLANNED_ACTIVITIES],
       journalEntries: [...SEED_JOURNAL_ENTRIES],
       communityPosts: [...SEED_COMMUNITY_POSTS],
+      comments: [...SEED_COMMENTS],
       groups: [...SEED_GROUPS],
       events: [...SEED_EVENTS],
       challenges: [...SEED_CHALLENGES],
       notifications: [...SEED_NOTIFICATIONS],
       userProfile: { ...SEED_PROFILE },
       userPreferences: { ...SEED_PREFERENCES },
+      mutedUsers: [],
+      reports: [],
     };
   }
 
@@ -127,7 +141,13 @@ export class LocalDemoRepository implements IHobbiverseRepository {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
         return fresh;
       }
-      return parsed;
+      return {
+        ...this.getInitialState(),
+        ...parsed,
+        comments: parsed.comments || [...SEED_COMMENTS],
+        mutedUsers: parsed.mutedUsers || [],
+        reports: parsed.reports || [],
+      };
     } catch {
       return this.getInitialState();
     }
@@ -443,8 +463,38 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     return Boolean(post.hasLiked);
   }
 
+  async getComments(postId?: string): Promise<Comment[]> {
+    const all = this.getState().comments || [];
+    if (!postId) return all;
+    return all.filter((c) => c.postId === postId);
+  }
+
+  async createComment(comment: Omit<Comment, "id" | "createdAt">): Promise<Comment> {
+    const state = this.getState();
+    const created: Comment = {
+      ...comment,
+      id: `comm-${Date.now()}`,
+      createdAt: "Just now",
+    };
+    if (!state.comments) state.comments = [...SEED_COMMENTS];
+    state.comments.push(created);
+
+    const post = state.communityPosts.find((p) => p.id === comment.postId);
+    if (post) {
+      post.commentsCount += 1;
+    }
+
+    this.saveState(state);
+    return created;
+  }
+
   async getGroups(): Promise<Group[]> {
     return this.getState().groups;
+  }
+
+  async getGroupBySlug(slug: string): Promise<Group | null> {
+    const found = this.getState().groups.find((g) => g.slug === slug);
+    return found ? { ...found } : null;
   }
 
   async toggleJoinGroup(groupId: string): Promise<boolean> {
@@ -456,6 +506,44 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     grp.memberCount += grp.isJoined ? 1 : -1;
     this.saveState(state);
     return Boolean(grp.isJoined);
+  }
+
+  async reportContent(report: {
+    contentId: string;
+    contentType: "post" | "comment" | "user";
+    reason: string;
+  }): Promise<boolean> {
+    const state = this.getState();
+    if (!state.reports) state.reports = [];
+    state.reports.push({
+      id: `rep-${Date.now()}`,
+      contentId: report.contentId,
+      contentType: report.contentType,
+      reason: report.reason,
+      timestamp: new Date().toISOString(),
+    });
+    this.saveState(state);
+    return true;
+  }
+
+  async toggleMuteUser(handle: string): Promise<boolean> {
+    const state = this.getState();
+    if (!state.mutedUsers) state.mutedUsers = [];
+    const index = state.mutedUsers.indexOf(handle);
+    let isMuted: boolean;
+    if (index >= 0) {
+      state.mutedUsers.splice(index, 1);
+      isMuted = false;
+    } else {
+      state.mutedUsers.push(handle);
+      isMuted = true;
+    }
+    this.saveState(state);
+    return isMuted;
+  }
+
+  async getMutedUsers(): Promise<string[]> {
+    return this.getState().mutedUsers || [];
   }
 
   async getEvents(): Promise<Event[]> {

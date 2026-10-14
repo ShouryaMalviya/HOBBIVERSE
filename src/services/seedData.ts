@@ -12,6 +12,7 @@ import {
   Event,
   Challenge,
   Notification,
+  Comment,
 } from "@/types";
 
 export const SEED_CATEGORIES: HobbyCategory[] = [
@@ -697,6 +698,33 @@ export const SEED_COMMUNITY_POSTS: CommunityPost[] = [
     likesCount: 19,
     hasLiked: false,
     commentsCount: 2,
+  },
+];
+
+export const SEED_COMMENTS: Comment[] = [
+  {
+    id: "comm-1",
+    postId: "post-1",
+    authorName: "Elena Rostova",
+    authorHandle: "elena_strings",
+    content: "The granulation on that wild blackberry pigment is stunning! Did you add gum arabic?",
+    createdAt: "1 hour ago",
+  },
+  {
+    id: "comm-2",
+    postId: "post-1",
+    authorName: "Marcus Thorne",
+    authorHandle: "marcus_ferment",
+    content: "Natural foraging gives such a grounded connection to the work. Beautiful tone.",
+    createdAt: "30 minutes ago",
+  },
+  {
+    id: "comm-3",
+    postId: "post-2",
+    authorName: "Clara Bow",
+    authorHandle: "clarabow_art",
+    content: "That ear on the loaf is perfection! The crust color is gorgeous.",
+    createdAt: "3 hours ago",
   },
 ];
 
