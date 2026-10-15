@@ -11,6 +11,7 @@ import {
   Comment,
   Group,
   Event,
+  Challenge,
   Notification,
   UserPreferences,
   UserProfile,
@@ -28,6 +29,7 @@ export function useHobbiverseStore() {
   const [mutedUsers, setMutedUsers] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<Group[]>([]);
   const [events, setEvents] = React.useState<Event[]>([]);
+  const [challenges, setChallenges] = React.useState<Challenge[]>([]);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
   const [preferences, setPreferences] = React.useState<UserPreferences | null>(null);
   const [profile, setProfile] = React.useState<UserProfile | null>(null);
@@ -43,6 +45,7 @@ export function useHobbiverseStore() {
       mutedList,
       grps,
       evts,
+      chals,
       notifs,
       prefs,
       prof,
@@ -56,6 +59,7 @@ export function useHobbiverseStore() {
       demoRepository.getMutedUsers(),
       demoRepository.getGroups(),
       demoRepository.getEvents(),
+      demoRepository.getChallenges(),
       demoRepository.getNotifications(),
       demoRepository.getUserPreferences(),
       demoRepository.getUserProfile(),
@@ -70,6 +74,7 @@ export function useHobbiverseStore() {
     setMutedUsers(mutedList);
     setGroups(grps);
     setEvents(evts);
+    setChallenges(chals);
     setNotifications(notifs);
     setPreferences(prefs);
     setProfile(prof);
@@ -197,6 +202,12 @@ export function useHobbiverseStore() {
     return rsvpd;
   };
 
+  const toggleJoinChallenge = async (challengeId: string) => {
+    const joined = await demoRepository.toggleJoinChallenge(challengeId);
+    await refreshAll();
+    return joined;
+  };
+
   const resetDemo = async () => {
     await demoRepository.resetDemoData();
     await refreshAll();
@@ -213,6 +224,7 @@ export function useHobbiverseStore() {
     mutedUsers,
     groups,
     events,
+    challenges,
     notifications,
     preferences,
     profile,
@@ -234,6 +246,7 @@ export function useHobbiverseStore() {
     toggleMuteUser,
     toggleJoinGroup,
     toggleRsvpEvent,
+    toggleJoinChallenge,
     resetDemo,
     refreshAll,
   };

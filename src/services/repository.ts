@@ -91,7 +91,11 @@ export interface IHobbiverseRepository {
   getGroupBySlug(slug: string): Promise<Group | null>;
   toggleJoinGroup(groupId: string): Promise<boolean>;
   getEvents(): Promise<Event[]>;
+  getEventBySlug(slug: string): Promise<Event | null>;
   toggleRsvpEvent(eventId: string): Promise<boolean>;
+  getChallenges(): Promise<Challenge[]>;
+  toggleJoinChallenge(challengeId: string): Promise<boolean>;
+  progressChallenge(challengeId: string): Promise<Challenge | null>;
   reportContent(report: { contentId: string; contentType: "post" | "comment" | "user"; reason: string }): Promise<boolean>;
   toggleMuteUser(handle: string): Promise<boolean>;
   getMutedUsers(): Promise<string[]>;
@@ -314,6 +318,31 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     };
     state.activitySessions.unshift(created);
     state.userProfile.sessionsLoggedCount += 1;
+
+    // Advance joined challenges
+    if (state.challenges) {
+      for (const ch of state.challenges) {
+        if (ch.isJoined && !ch.isCompleted) {
+          if (ch.category === session.category || ch.slug === "gentle-first-three") {
+            ch.currentSessionsCount = Math.min(ch.targetSessionsCount, ch.currentSessionsCount + 1);
+            if (ch.currentSessionsCount >= ch.targetSessionsCount) {
+              ch.isCompleted = true;
+              if (!state.notifications) state.notifications = [];
+              state.notifications.unshift({
+                id: `notif-milestone-${Date.now()}`,
+                title: "Gentle Milestone Completed!",
+                message: `You completed "${ch.title}" at your own pace!`,
+                type: "milestone",
+                createdAt: "Just now",
+                isRead: false,
+                href: "/events",
+              });
+            }
+          }
+        }
+      }
+    }
+
     this.saveState(state);
     return created;
   }
@@ -550,6 +579,11 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     return this.getState().events;
   }
 
+  async getEventBySlug(slug: string): Promise<Event | null> {
+    const found = this.getState().events.find((e) => e.slug === slug);
+    return found ? { ...found } : null;
+  }
+
   async toggleRsvpEvent(eventId: string): Promise<boolean> {
     const state = this.getState();
     const ev = state.events.find((e) => e.id === eventId);
@@ -559,6 +593,35 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     ev.participantsCount += ev.isRsvpd ? 1 : -1;
     this.saveState(state);
     return Boolean(ev.isRsvpd);
+  }
+
+  async getChallenges(): Promise<Challenge[]> {
+    return this.getState().challenges || [];
+  }
+
+  async toggleJoinChallenge(challengeId: string): Promise<boolean> {
+    const state = this.getState();
+    if (!state.challenges) state.challenges = [...SEED_CHALLENGES];
+    const ch = state.challenges.find((c) => c.id === challengeId);
+    if (!ch) return false;
+
+    ch.isJoined = !ch.isJoined;
+    this.saveState(state);
+    return Boolean(ch.isJoined);
+  }
+
+  async progressChallenge(challengeId: string): Promise<Challenge | null> {
+    const state = this.getState();
+    if (!state.challenges) state.challenges = [...SEED_CHALLENGES];
+    const ch = state.challenges.find((c) => c.id === challengeId);
+    if (!ch) return null;
+
+    ch.currentSessionsCount = Math.min(ch.targetSessionsCount, ch.currentSessionsCount + 1);
+    if (ch.currentSessionsCount >= ch.targetSessionsCount) {
+      ch.isCompleted = true;
+    }
+    this.saveState(state);
+    return ch;
   }
 
   async getUserPreferences(): Promise<UserPreferences> {
