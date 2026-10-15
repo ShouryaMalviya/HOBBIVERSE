@@ -4,11 +4,10 @@ import { Event } from "@/types";
  * Generates and triggers the download of an iCalendar (.ics) file
  * for an atelier gathering or gentle community meetup.
  */
-export function downloadEventIcs(event: Event): void {
-  if (typeof window === "undefined") return;
-
-  // Formulate dates in iCal format (UTC representation for demo session)
-  // Demo baseline: scheduled for the upcoming session period
+/**
+ * Formats standard iCalendar (.ics) content for an event.
+ */
+export function generateEventIcsContent(event: Event): string {
   const startStamp = "20261018T180000Z";
   const endStamp = "20261018T190000Z";
   const nowStamp = "20261015T120000Z";
@@ -50,7 +49,18 @@ export function downloadEventIcs(event: Event): void {
     "END:VCALENDAR",
   ];
 
-  const blob = new Blob([icsLines.join("\r\n")], {
+  return icsLines.join("\r\n");
+}
+
+/**
+ * Generates and triggers the download of an iCalendar (.ics) file
+ * for an atelier gathering or gentle community meetup.
+ */
+export function downloadEventIcs(event: Event): void {
+  if (typeof window === "undefined") return;
+
+  const icsString = generateEventIcsContent(event);
+  const blob = new Blob([icsString], {
     type: "text/calendar;charset=utf-8",
   });
   const url = URL.createObjectURL(blob);

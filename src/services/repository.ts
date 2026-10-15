@@ -137,9 +137,14 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     };
   }
 
+  private memoryState: DemoStatePayload | null = null;
+
   private getState(): DemoStatePayload {
     if (typeof window === "undefined") {
-      return this.getInitialState();
+      if (!this.memoryState) {
+        this.memoryState = this.getInitialState();
+      }
+      return JSON.parse(JSON.stringify(this.memoryState));
     }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -167,7 +172,10 @@ export class LocalDemoRepository implements IHobbiverseRepository {
   }
 
   private saveState(state: DemoStatePayload): void {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") {
+      this.memoryState = JSON.parse(JSON.stringify(state));
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       window.dispatchEvent(new CustomEvent(STATE_CHANGE_EVENT));
@@ -802,10 +810,12 @@ export class LocalDemoRepository implements IHobbiverseRepository {
   }
 
   async resetDemoData(): Promise<void> {
+    const initial = this.getInitialState();
     if (typeof window !== "undefined") {
-      const initial = this.getInitialState();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
       window.dispatchEvent(new CustomEvent(STATE_CHANGE_EVENT));
+    } else {
+      this.memoryState = initial;
     }
   }
 }
