@@ -46,6 +46,16 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileDrawerOpen) {
+        setMobileDrawerOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileDrawerOpen]);
+
   const toggleTheme = () => {
     setIsDark((prev) => {
       const next = !prev;
@@ -79,6 +89,14 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[var(--bg-page)] text-[var(--text-body)] transition-colors">
+      {/* Skip to Main Content Link for Keyboard Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--wine-900)] focus:text-[var(--paper-50)] focus:rounded-[var(--radius-md)] focus:shadow-[var(--shadow-elevated)] focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
       {/* Desktop Sidebar */}
       <aside
         aria-label="Workspace Navigation"
@@ -256,7 +274,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
                   href={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
                   className={cn(
-                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium",
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium min-h-[44px]",
                     isActive
                       ? "bg-[var(--brand-anchor)] text-[var(--paper-50)]"
                       : "text-[var(--ink-800)] hover:bg-[var(--paper-200)]"
@@ -283,7 +301,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="flex items-center gap-3 px-3.5 py-2 text-sm text-[var(--stone-600)]"
+                    className="flex items-center gap-3 px-3.5 py-2 text-sm text-[var(--stone-600)] min-h-[44px]"
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
@@ -296,7 +314,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
                   setMobileDrawerOpen(false);
                   signOut();
                 }}
-                className="flex items-center gap-3 px-3.5 py-2 text-sm text-[var(--wine-700)] hover:bg-[var(--paper-200)] rounded-md transition-colors text-left"
+                className="flex items-center gap-3 px-3.5 py-2 text-sm text-[var(--wine-700)] hover:bg-[var(--paper-200)] rounded-md transition-colors text-left min-h-[44px]"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
@@ -306,17 +324,19 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 flex flex-col">{children}</main>
+        <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col focus:outline-none">
+          {children}
+        </main>
 
         {/* Mobile Bottom Navigation Bar */}
         <nav
           aria-label="Mobile quick navigation"
-          className="md:hidden sticky bottom-0 z-30 bg-[var(--bg-surface)]/95 backdrop-blur-md border-t border-[var(--border-subtle)] px-2 py-1.5 flex items-center justify-around"
+          className="md:hidden sticky bottom-0 z-30 bg-[var(--bg-surface)]/95 backdrop-blur-md border-t border-[var(--border-subtle)] px-2 py-1 flex items-center justify-around"
         >
           <Link
             href="/home"
             className={cn(
-              "flex flex-col items-center py-1 px-3 text-[10px] font-medium rounded-lg",
+              "flex flex-col items-center justify-center py-1 px-3 text-[10px] font-medium rounded-lg min-h-[48px]",
               pathname === "/home" ? "text-[var(--wine-700)] font-bold" : "text-[var(--stone-600)]"
             )}
           >
@@ -326,7 +346,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
           <Link
             href="/explore"
             className={cn(
-              "flex flex-col items-center py-1 px-3 text-[10px] font-medium rounded-lg",
+              "flex flex-col items-center justify-center py-1 px-3 text-[10px] font-medium rounded-lg min-h-[48px]",
               pathname === "/explore" ? "text-[var(--wine-700)] font-bold" : "text-[var(--stone-600)]"
             )}
           >
@@ -336,7 +356,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
           <Link
             href="/planner"
             className={cn(
-              "flex flex-col items-center py-1 px-3 text-[10px] font-medium rounded-lg",
+              "flex flex-col items-center justify-center py-1 px-3 text-[10px] font-medium rounded-lg min-h-[48px]",
               pathname === "/planner" ? "text-[var(--wine-700)] font-bold" : "text-[var(--stone-600)]"
             )}
           >
@@ -346,7 +366,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
           <Link
             href="/journal"
             className={cn(
-              "flex flex-col items-center py-1 px-3 text-[10px] font-medium rounded-lg",
+              "flex flex-col items-center justify-center py-1 px-3 text-[10px] font-medium rounded-lg min-h-[48px]",
               pathname === "/journal" ? "text-[var(--wine-700)] font-bold" : "text-[var(--stone-600)]"
             )}
           >
@@ -356,7 +376,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({ children }) => {
           <Link
             href="/community"
             className={cn(
-              "flex flex-col items-center py-1 px-3 text-[10px] font-medium rounded-lg",
+              "flex flex-col items-center justify-center py-1 px-3 text-[10px] font-medium rounded-lg min-h-[48px]",
               pathname === "/community" ? "text-[var(--wine-700)] font-bold" : "text-[var(--stone-600)]"
             )}
           >

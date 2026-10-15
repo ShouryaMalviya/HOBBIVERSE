@@ -22,6 +22,16 @@ export const PublicHeader: React.FC = () => {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const toggleTheme = () => {
     setIsDark((prev) => {
       const next = !prev;
@@ -128,7 +138,7 @@ export const PublicHeader: React.FC = () => {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium rounded-lg text-[var(--ink-800)] hover:bg-[var(--paper-200)]"
+                className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium rounded-lg text-[var(--ink-800)] hover:bg-[var(--paper-200)] min-h-[44px]"
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -138,12 +148,12 @@ export const PublicHeader: React.FC = () => {
 
           <div className="pt-3 border-t border-[var(--border-subtle)] flex flex-col gap-2">
             <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="outline" size="sm" className="w-full min-h-[44px]">
                 Sign In
               </Button>
             </Link>
             <Link href="/home" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" size="sm" className="w-full">
+              <Button variant="primary" size="sm" className="w-full min-h-[44px]">
                 Enter Demo Mode
               </Button>
             </Link>
