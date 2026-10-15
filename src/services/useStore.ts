@@ -31,6 +31,9 @@ export function useHobbiverseStore() {
   const [events, setEvents] = React.useState<Event[]>([]);
   const [challenges, setChallenges] = React.useState<Challenge[]>([]);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
+  const [reports, setReports] = React.useState<
+    Array<{ id: string; contentId: string; contentType: string; reason: string; timestamp: string }>
+  >([]);
   const [preferences, setPreferences] = React.useState<UserPreferences | null>(null);
   const [profile, setProfile] = React.useState<UserProfile | null>(null);
 
@@ -47,6 +50,7 @@ export function useHobbiverseStore() {
       evts,
       chals,
       notifs,
+      repList,
       prefs,
       prof,
     ] = await Promise.all([
@@ -61,6 +65,7 @@ export function useHobbiverseStore() {
       demoRepository.getEvents(),
       demoRepository.getChallenges(),
       demoRepository.getNotifications(),
+      demoRepository.getReports(),
       demoRepository.getUserPreferences(),
       demoRepository.getUserProfile(),
     ]);
@@ -76,6 +81,7 @@ export function useHobbiverseStore() {
     setEvents(evts);
     setChallenges(chals);
     setNotifications(notifs);
+    setReports(repList);
     setPreferences(prefs);
     setProfile(prof);
   }, []);
@@ -233,6 +239,29 @@ export function useHobbiverseStore() {
     return demoRepository.exportLocalData();
   };
 
+  const dismissReport = async (id: string) => {
+    const ok = await demoRepository.dismissReport(id);
+    await refreshAll();
+    return ok;
+  };
+
+  const deleteReportedContent = async (contentId: string, contentType: "post" | "comment") => {
+    const ok = await demoRepository.deleteReportedContent(contentId, contentType);
+    await refreshAll();
+    return ok;
+  };
+
+  const importLocalData = async (jsonString: string) => {
+    const ok = await demoRepository.importLocalData(jsonString);
+    await refreshAll();
+    return ok;
+  };
+
+  const seedSampleActivityHistory = async () => {
+    await demoRepository.seedSampleActivityHistory();
+    await refreshAll();
+  };
+
   const resetDemo = async () => {
     await demoRepository.resetDemoData();
     await refreshAll();
@@ -251,6 +280,7 @@ export function useHobbiverseStore() {
     events,
     challenges,
     notifications,
+    reports,
     preferences,
     profile,
     // Actions
@@ -268,6 +298,8 @@ export function useHobbiverseStore() {
     toggleLikePost,
     createComment,
     reportContent,
+    dismissReport,
+    deleteReportedContent,
     toggleMuteUser,
     toggleJoinGroup,
     toggleRsvpEvent,
@@ -277,6 +309,8 @@ export function useHobbiverseStore() {
     markNotificationRead,
     markAllNotificationsRead,
     exportLocalData,
+    importLocalData,
+    seedSampleActivityHistory,
     resetDemo,
     refreshAll,
   };

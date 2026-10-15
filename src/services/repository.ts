@@ -107,7 +107,12 @@ export interface IHobbiverseRepository {
   getNotifications(): Promise<Notification[]>;
   markNotificationRead(id: string): Promise<void>;
   markAllNotificationsRead(): Promise<void>;
+  getReports(): Promise<Array<{ id: string; contentId: string; contentType: string; reason: string; timestamp: string }>>;
+  dismissReport(id: string): Promise<boolean>;
+  deleteReportedContent(contentId: string, contentType: "post" | "comment"): Promise<boolean>;
   exportLocalData(): Promise<string>;
+  importLocalData(jsonString: string): Promise<boolean>;
+  seedSampleActivityHistory(): Promise<void>;
   resetDemoData(): Promise<void>;
 }
 
@@ -693,9 +698,107 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     }
   }
 
+  async getReports(): Promise<
+    Array<{ id: string; contentId: string; contentType: string; reason: string; timestamp: string }>
+  > {
+    return this.getState().reports || [];
+  }
+
+  async dismissReport(id: string): Promise<boolean> {
+    const state = this.getState();
+    if (!state.reports) return false;
+    const initialLen = state.reports.length;
+    state.reports = state.reports.filter((r) => r.id !== id);
+    if (state.reports.length !== initialLen) {
+      this.saveState(state);
+      return true;
+    }
+    return false;
+  }
+
+  async deleteReportedContent(
+    contentId: string,
+    contentType: "post" | "comment"
+  ): Promise<boolean> {
+    const state = this.getState();
+    if (contentType === "post") {
+      state.communityPosts = state.communityPosts.filter((p) => p.id !== contentId);
+      state.comments = (state.comments || []).filter((c) => c.postId !== contentId);
+    } else {
+      state.comments = (state.comments || []).filter((c) => c.id !== contentId);
+    }
+    if (state.reports) {
+      state.reports = state.reports.filter((r) => r.contentId !== contentId);
+    }
+    this.saveState(state);
+    return true;
+  }
+
   async exportLocalData(): Promise<string> {
     const state = this.getState();
     return JSON.stringify(state, null, 2);
+  }
+
+  async importLocalData(jsonString: string): Promise<boolean> {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (!parsed || typeof parsed !== "object" || parsed.version !== 1) {
+        return false;
+      }
+      this.saveState(parsed);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async seedSampleActivityHistory(): Promise<void> {
+    const state = this.getState();
+    const sampleSessions: ActivitySession[] = [
+      {
+        id: `sess-seed-${Date.now()}-1`,
+        hobbyId: "hobby-1",
+        hobbySlug: "botanical-watercolor",
+        hobbyTitle: "Botanical Watercolor Painting",
+        category: "art-craft",
+        date: "2026-10-14",
+        durationMinutes: 20,
+        notes: "Testing sap green pigment gradients and single stroke leaf pressure.",
+        reflectionMood: "Calm & Centered",
+        createdAt: "2026-10-14T15:00:00Z",
+      },
+      {
+        id: `sess-seed-${Date.now()}-2`,
+        hobbyId: "hobby-2",
+        hobbySlug: "sourdough-baking",
+        hobbyTitle: "Artisan Sourdough Rhythm",
+        category: "cooking",
+        date: "2026-10-13",
+        durationMinutes: 15,
+        notes: "Fed starter with rye and bread flour. Doubled in 3.5 hours.",
+        reflectionMood: "Grounding",
+        createdAt: "2026-10-13T09:30:00Z",
+      },
+      {
+        id: `sess-seed-${Date.now()}-3`,
+        hobbyId: "hobby-3",
+        hobbySlug: "fingerstyle-guitar",
+        hobbyTitle: "Fingerstyle Acoustic Guitar",
+        category: "music",
+        date: "2026-10-12",
+        durationMinutes: 25,
+        notes: "Practiced thumb-index alternating bass on C and G chords.",
+        reflectionMood: "Focused & Joyful",
+        createdAt: "2026-10-12T19:00:00Z",
+      },
+    ];
+
+    sampleSessions.forEach((s) => {
+      state.activitySessions.unshift(s);
+      state.userProfile.sessionsLoggedCount += 1;
+    });
+
+    this.saveState(state);
   }
 
   async resetDemoData(): Promise<void> {
