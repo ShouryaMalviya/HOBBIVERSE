@@ -102,8 +102,12 @@ export interface IHobbiverseRepository {
   getUserPreferences(): Promise<UserPreferences>;
   saveUserPreferences(prefs: UserPreferences): Promise<void>;
   getUserProfile(): Promise<UserProfile>;
+  saveUserProfile(profileUpdates: Partial<UserProfile>): Promise<UserProfile>;
+  getUserByUsername(username: string): Promise<UserProfile | null>;
   getNotifications(): Promise<Notification[]>;
   markNotificationRead(id: string): Promise<void>;
+  markAllNotificationsRead(): Promise<void>;
+  exportLocalData(): Promise<string>;
   resetDemoData(): Promise<void>;
 }
 
@@ -638,6 +642,34 @@ export class LocalDemoRepository implements IHobbiverseRepository {
     return this.getState().userProfile;
   }
 
+  async saveUserProfile(profileUpdates: Partial<UserProfile>): Promise<UserProfile> {
+    const state = this.getState();
+    state.userProfile = { ...state.userProfile, ...profileUpdates };
+    this.saveState(state);
+    return state.userProfile;
+  }
+
+  async getUserByUsername(username: string): Promise<UserProfile | null> {
+    const state = this.getState();
+    if (state.userProfile.username === username) {
+      return { ...state.userProfile };
+    }
+    if (username === "clara" || username === "clarabow_art") {
+      return {
+        id: "user-clara",
+        username: "clara",
+        displayName: "Clara Bow",
+        bio: "Observational botanical sketcher, wild blackberry ink maker, and pressed flower archivist.",
+        joinedAt: "September 2026",
+        isPublic: true,
+        interests: ["art-craft", "outdoors-nature"],
+        completedStepsCount: 7,
+        sessionsLoggedCount: 9,
+      };
+    }
+    return null;
+  }
+
   async getNotifications(): Promise<Notification[]> {
     return this.getState().notifications;
   }
@@ -649,6 +681,21 @@ export class LocalDemoRepository implements IHobbiverseRepository {
       notif.isRead = true;
       this.saveState(state);
     }
+  }
+
+  async markAllNotificationsRead(): Promise<void> {
+    const state = this.getState();
+    if (state.notifications) {
+      state.notifications.forEach((n) => {
+        n.isRead = true;
+      });
+      this.saveState(state);
+    }
+  }
+
+  async exportLocalData(): Promise<string> {
+    const state = this.getState();
+    return JSON.stringify(state, null, 2);
   }
 
   async resetDemoData(): Promise<void> {

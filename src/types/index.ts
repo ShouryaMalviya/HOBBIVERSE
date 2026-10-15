@@ -72,6 +72,7 @@ export interface UserPreferences {
   budgetComfort: "minimal" | "moderate" | "flexible";
   soloSocialPreference: "solo" | "social" | "both";
   energyPreference: "calm" | "medium" | "active";
+  reduceMotion?: boolean;
 }
 
 export interface UserProfile extends BaseEntity {

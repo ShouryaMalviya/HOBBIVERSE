@@ -208,6 +208,31 @@ export function useHobbiverseStore() {
     return joined;
   };
 
+  const saveUserProfile = async (profileUpdates: Partial<UserProfile>) => {
+    const updated = await demoRepository.saveUserProfile(profileUpdates);
+    await refreshAll();
+    return updated;
+  };
+
+  const saveUserPreferences = async (prefs: UserPreferences) => {
+    await demoRepository.saveUserPreferences(prefs);
+    await refreshAll();
+  };
+
+  const markNotificationRead = async (id: string) => {
+    await demoRepository.markNotificationRead(id);
+    await refreshAll();
+  };
+
+  const markAllNotificationsRead = async () => {
+    await demoRepository.markAllNotificationsRead();
+    await refreshAll();
+  };
+
+  const exportLocalData = async () => {
+    return demoRepository.exportLocalData();
+  };
+
   const resetDemo = async () => {
     await demoRepository.resetDemoData();
     await refreshAll();
@@ -247,6 +272,11 @@ export function useHobbiverseStore() {
     toggleJoinGroup,
     toggleRsvpEvent,
     toggleJoinChallenge,
+    saveUserProfile,
+    saveUserPreferences,
+    markNotificationRead,
+    markAllNotificationsRead,
+    exportLocalData,
     resetDemo,
     refreshAll,
   };
