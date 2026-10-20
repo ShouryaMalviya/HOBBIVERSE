@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "verify:journeys": "npx -y tsx scripts/verify-journeys.ts"
+    "verify:journeys": "npx -y tsx scripts/verify-journeys.ts",
+    "audit:performance": "npx -y tsx scripts/verify-performance.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

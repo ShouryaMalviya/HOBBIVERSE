@@ -5,11 +5,13 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -23,6 +25,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://hobbiverse.atelier"),
+  manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
   title: {
     default: "Hobbiverse — Discover, Practice, and Cherish Creative Hobbies",
     template: "%s | Hobbiverse Atelier",
@@ -46,6 +53,23 @@ export const metadata: Metadata = {
       "A welcoming digital space to explore beginner hobbies, build gentle creative routines, reflect privately, and connect with encouraging kindred circles.",
     type: "website",
     siteName: "Hobbiverse",
+    url: "https://hobbiverse.atelier",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Hobbiverse",
+  applicationCategory: "LifestyleApplication",
+  genre: "Creativity & Hobby Education",
+  operatingSystem: "All modern browsers",
+  description:
+    "A welcoming digital space to explore beginner hobbies, build gentle creative routines, reflect privately, and connect with encouraging kindred circles.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
   },
 };
 
@@ -59,6 +83,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );

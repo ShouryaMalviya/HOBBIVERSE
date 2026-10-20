@@ -53,6 +53,14 @@ export const PublicHeader: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--bg-page)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] transition-colors">
+      {/* Accessible Screen Reader Skip Link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-4 z-50 px-4 py-2 bg-[var(--burgundy-primary)] text-white rounded-lg shadow-lg font-medium outline-none focus:ring-2 focus:ring-[var(--burgundy-accent)] transition-transform"
+      >
+        Skip to main content
+      </a>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <HobbiverseBrand size="md" showTagline />
