@@ -1,5 +1,6 @@
 import { SEED_HOBBIES, SEED_GROUPS, SEED_EVENTS, SEED_CHALLENGES } from "./seedData";
 import { demoRepository } from "./repository";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export interface HealthIssue {
   severity: "info" | "warning" | "error";
@@ -179,7 +180,9 @@ export async function runContentHealthAudit(): Promise<ContentHealthReport> {
     totalChallenges: challenges.length,
     issues,
     systemStatus: {
-      storageEngine: "localStorage Demo Sandbox",
+      storageEngine: isSupabaseConfigured()
+        ? "Supabase Remote DB"
+        : "localStorage Demo Sandbox",
       storageBytesUsed: storageBytes,
       totalRecords,
       isHealthy: errorCount === 0,

@@ -821,3 +821,4 @@ export class LocalDemoRepository implements IHobbiverseRepository {
 }
 
 export const demoRepository = new LocalDemoRepository();
+export { getActiveRepository } from "./syncEngine";
